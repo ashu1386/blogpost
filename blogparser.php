@@ -2,34 +2,55 @@
 
         header('Content-type: application/json');
 
+         // make your required checks
+
         $fp    = 'blogpost.txt';
-
-        // Open the file to read data.
-		$fh = fopen($fp,'r');
 		
-		// define an eampty array
-		$data = array();
+	// define an eampty array
+	$data = array();
+	$content = array();
 
-		// read data
-		while ($line = fgets($fh)) {
-			// if the line has some data
-			if(trim($line) != ''){
-				// explode each line data 
-				$line_data = explode(':',$line);
-				if(trim($line_data[0]) == 'tags'){
-					//seperate data by comma(,) and convert it into array
-					$tags_data = explode(',',trim($line_data[1]));
-					$data[trim($line_data[0])] = $tags_data;
-				}
-				else{
-					// push data to array
-					$data[trim($line_data[0])] = trim($line_data[1]);
-				}
+        // get the contents of file in array
+        $conents_arr   = file($fp,FILE_IGNORE_NEW_LINES);
+        foreach($conents_arr as $key=>$value)
+        {			
+		if(trim($value) != ''  && strpos($value, ':') !== false){
+			// explode each line data 
+			$line_data = explode(':',$value,2);
+			if(trim($line_data[0]) == 'tags'){
+				//seperate data by comma(,) and convert it into array
+				$tags_data = explode(',',trim($line_data[1]));
+				$data[trim($line_data[0])] = $tags_data;
+			}
+			else{
+				// push data to array
+				$data[trim($line_data[0])] = trim($line_data[1]);
 			}
 		}
+        }
 		
-		fclose($fh);
+	// find if READMORE present in array
+	$key = array_search("READMORE", $conents_arr);
 
-	// json encode the array
-	echo $json_data = json_encode($data);
+	//find metakey last position
+	$metakey = array_keys($conents_arr,"---"); 
+	$lastMetakey = array_pop($metakey) + 1;
+
+	// short content
+	for($j = $lastMetakey; $j < $key; $j++){
+		$short_content[$j] = $conents_arr[$j];
+	}
+	$data['short-content'] = implode(" ",$short_content);
+
+	//content 
+	$con_key = $key + 1;
+	for($i = $con_key; $i < count($conents_arr);$i++){
+		$content[$i] = $conents_arr[$i];
+	}
+	$data['content'] = implode(" ",$content);
+		
+        //print_r($data);exit;
+        $json_contents = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        echo $json_contents;
 ?>
