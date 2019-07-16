@@ -8,10 +8,13 @@
 		
 	// define an eampty array
 	$data = array();
-	$content = array();
-
+		
         // get the contents of file in array
         $conents_arr   = file($fp,FILE_IGNORE_NEW_LINES);
+	if(empty($conents_arr)){
+		echo "File is empty";
+		exit;
+	}
         foreach($conents_arr as $key=>$value)
         {			
 		if(trim($value) != ''  && strpos($value, ':') !== false){
@@ -32,24 +35,25 @@
 	// find if READMORE present in array
 	$key = array_search("READMORE", $conents_arr);
 
-	//find metakey last position
-	$metakey = array_keys($conents_arr,"---"); 
-	$lastMetakey = array_pop($metakey) + 1;
+	if($key){
+		//find metakey last position
+		$metakey = array_keys($conents_arr,"---"); 
+		$lastMetakey = array_pop($metakey) + 1;
 
-	// short content
-	for($j = $lastMetakey; $j < $key; $j++){
-		$short_content[$j] = $conents_arr[$j];
-	}
-	$data['short-content'] = implode(" ",$short_content);
+		// short content
+		for($j = $lastMetakey; $j < $key; $j++){
+			$short_content[$j] = $conents_arr[$j];
+		}
+		$data['short-content'] = implode(" ",$short_content);
 
-	//content 
-	$con_key = $key + 1;
-	for($i = $con_key; $i < count($conents_arr);$i++){
-		$content[$i] = $conents_arr[$i];
+		//content 
+		$con_key = $key + 1;
+		for($i = $con_key; $i < count($conents_arr);$i++){
+			$content[$i] = $conents_arr[$i];
+		}
+		$data['content'] = implode(" ",$content);
 	}
-	$data['content'] = implode(" ",$content);
 		
-        //print_r($data);exit;
         $json_contents = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         echo $json_contents;
